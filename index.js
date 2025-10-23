@@ -1,4 +1,11 @@
 // index.js - Bot con LOGS SUPER DETALLADOS
+
+// Decodificar private key de base64 si existe
+if (process.env.PRIVATE_KEY_BASE64 && !process.env.PRIVATE_KEY) {
+  process.env.PRIVATE_KEY = Buffer.from(process.env.PRIVATE_KEY_BASE64, 'base64').toString('utf8');
+  console.log('🔑 Private key decodificada desde base64');
+}
+
 const { GoogleGenerativeAI } = require('@google/generative-ai');
 
 module.exports = (app) => {
