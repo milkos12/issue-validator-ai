@@ -1,4 +1,4 @@
-// start.js - Prepara las variables de entorno antes de iniciar Probot
+// start.js - Prepara las variables de entorno e inicia Probot correctamente
 
 // Decodificar private key de base64 ANTES de que Probot inicie
 if (process.env.PRIVATE_KEY_BASE64 && !process.env.PRIVATE_KEY) {
@@ -7,18 +7,25 @@ if (process.env.PRIVATE_KEY_BASE64 && !process.env.PRIVATE_KEY) {
   console.log('✅ Private key decodificada correctamente');
 }
 
-// Ejecutar el comando de Probot CLI
-const { execSync } = require('child_process');
-const path = require('path');
+// Importar y ejecutar Probot directamente (no con execSync)
+const { Probot, Server } = require('probot');
+const app = require('./index.js');
 
-const indexPath = path.join(__dirname, 'index.js');
-
-try {
-  execSync(`npx probot run ${indexPath}`, {
-    stdio: 'inherit',
-    env: process.env
+async function start() {
+  const server = new Server({
+    Probot: Probot.defaults({
+      appId: process.env.APP_ID,
+      privateKey: process.env.PRIVATE_KEY,
+      secret: process.env.WEBHOOK_SECRET
+    })
   });
-} catch (error) {
-  console.error('Error al ejecutar Probot:', error);
-  process.exit(1);
+
+  await server.load(app);
+  await server.start();
+  console.log('✅ Servidor de Probot iniciado correctamente');
 }
+
+start().catch((error) => {
+  console.error('❌ Error al iniciar el servidor:', error);
+  process.exit(1);
+});
